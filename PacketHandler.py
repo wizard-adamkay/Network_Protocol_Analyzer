@@ -3,6 +3,7 @@ class PacketHandler:
         self.parent = parent
         self.fullPacketList = []
         self.sessions = {}
+
     def handleNewPacket(self, packet):
         self.fullPacketList.append(packet)
         if "TCP" in packet:
@@ -11,7 +12,7 @@ class PacketHandler:
                 self.sessions[key].append(len(self.fullPacketList)-1)
             else:
                 self.sessions[key] = [len(self.fullPacketList)-1]
-        if self.parent.filterBar.filterPacket(packet):
+        if self.parent.filterBar.filterPacket(packet, len(self.fullPacketList)):
             self.parent.packetListView.addToList(len(self.fullPacketList), packet)
 
     def clear(self):

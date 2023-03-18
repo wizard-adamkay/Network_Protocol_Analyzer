@@ -1,6 +1,7 @@
 from os import listdir
 from os.path import isfile, join
-from scapy.all import rdpcap
+from scapy.all import rdpcap, send
+from scapy.layers.inet import IP, TCP
 
 
 class IDSHandler():
@@ -26,3 +27,7 @@ class IDSHandler():
                 for packet in pcap:
                     if packet in self.parent.packetHandler.fullPacketList:
                         pass
+
+    def killConversation(self, packet):
+        send(IP(dst=packet.payload.dst) / TCP(sport=packet.sport, dport=packet.dport, flags="F"), verbose=False)
+        send(IP(dst=packet.payload.src) / TCP(sport=packet.dport, dport=packet.sport, flags="F"), verbose=False)

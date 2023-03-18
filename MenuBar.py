@@ -9,12 +9,14 @@ class MenuHeader(tk.Frame):
         super().__init__(**kw)
         self.parent = parent
         def saveToPcapCallBack():
-            for pkt in parent.packetHandler.fullPacketList:
-                wrpcap('filtered.pcap', pkt, append=True)
+            fileName = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".pcap", title="Save as", filetypes=(("PCAP Files", "*.pcap*"),("All Files", "*.*")))
+            wrpcap(fileName, self.parent.packetHandler.fullPacketList)
 
         def saveSelectedToPcapCallBack():
-            for pkt in parent.packetDetailListView.displayedPackets:
-                wrpcap('filtered.pcap', pkt, append=True)
+            fileName = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".pcap",
+                                                    title="Save as",
+                                                    filetypes=(("PCAP Files", "*.pcap*"), ("All Files", "*.*")))
+            wrpcap(fileName, self.parent.packetDetailListView.displayedPackets)
 
         def loadFromPcap():
             filename = filedialog.askopenfilename(initialdir="/",
@@ -24,6 +26,7 @@ class MenuHeader(tk.Frame):
                                                                  ("all files",
                                                                   "*.*")))
             pcap = rdpcap(filename)
+            self.parent.packetListView.markedPackets.clear()
             self.parent.packetHandler.clear()
             for packet in pcap:
                 self.parent.packetHandler.handleNewPacket(packet)

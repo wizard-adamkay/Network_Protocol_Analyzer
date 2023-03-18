@@ -7,13 +7,25 @@ class FilterBar(tk.Frame):
         self.currentFilter = ""
 
         def func(event):
+            fast = False
             userInput = self.filterEntry.get()
+            splitUserInput = userInput.split()
+            splitCurrentFilter = self.currentFilter.split()
+            if len(splitUserInput) > len(splitCurrentFilter):
+                if splitCurrentFilter[:len(splitUserInput)] == splitUserInput:
+                    if splitCurrentFilter[len(splitUserInput)] == "and":
+                        fast = True
             try:
                 self.currentFilter = userInput
                 self.parent.packetListView.clear()
-                for index, packet in enumerate(self.parent.packetHandler.fullPacketList):
-                    if self.filterPacket(packet):
-                        self.parent.packetListView.addToList(index + 1, packet)
+                if fast:
+                    for index, packet in enumerate(self.parent.packetListView.displayedPackets):
+                        if self.filterPacket(packet, self.parent.packetListView.displayedPacketsNum[index]):
+                            self.parent.packetListView.addToList(self.parent.packetListView.displayedPacketsNum[index], packet)
+                else:
+                    for index, packet in enumerate(self.parent.packetHandler.fullPacketList):
+                        if self.filterPacket(packet, index):
+                            self.parent.packetListView.addToList(index + 1, packet)
             except Exception as e:
                 print(e)
 
@@ -24,8 +36,8 @@ class FilterBar(tk.Frame):
         self.filterEntry.grid(row=0, sticky=tk.EW)
 
 
-    def filterPacket(self, packet):
-        allowedTerms = ("srcip", "dstip", "srcport", "dstport", "time", "flags", "protocol")
+    def filterPacket(self, packet, displayNum):
+        allowedTerms = ("srcip", "dstip", "srcport", "dstport", "time", "flags", "protocol", "marked")
         allowedComparators = ("==", "!=", "<", "<=", ">", ">=")
         allowedOperators = ("or", "and")
         if self.currentFilter == "":
@@ -82,6 +94,8 @@ class FilterBar(tk.Frame):
                     evalFilter.append(False)
             elif term == 'protocol':
                 evalFilter.append(self.evaluateProto(packet, op, right))
+            elif term == 'marked':
+                evalFilter.append(self.evaluateMark(displayNum, op, right))
             else:
                 raise ValueError(f"failed on term {term}")
             index+=3
@@ -109,6 +123,18 @@ class FilterBar(tk.Frame):
             return True if packet.haslayer(proto) else False
         elif op == "!=":
             return False if packet.haslayer(proto) else True
+        else:
+            raise ValueError(f"protocols can only be compared with == or != not {op}")
+
+    def evaluateMark(self, packetNum, op, mark):
+        if mark != "True" and mark != "False":
+            raise ValueError(f"Marked Packets can only be compared with 'True' or 'False' values not {mark}")
+        packetMarked = True if packetNum in self.parent.packetListView.markedPackets else False
+        packetMarked = not packetMarked if mark == "False" else packetMarked
+        if op == "==":
+            return True if packetMarked else False
+        elif op == "!=":
+            return False if packetMarked else True
         else:
             raise ValueError(f"protocols can only be compared with == or != not {op}")
 

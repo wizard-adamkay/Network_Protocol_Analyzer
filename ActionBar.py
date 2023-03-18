@@ -7,9 +7,9 @@ class ActionBar(tk.Frame):
         self.parent = parent
         self.started = False
         self.sniffer = Sniffer()
-        self.config(bg="cyan")
 
         def startCapture():
+            self.parent.packetListView.markedPackets.clear()
             self.parent.packetHandler.clear()
             self.started = True
             queue = self.sniffer.start()
