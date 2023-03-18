@@ -1,13 +1,13 @@
 import tkinter as tk
 from scapy.all import *
 from tkinter import filedialog
-from Graph import NewWindow
+from Graph import GraphWindow
+
 
 class MenuHeader(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)
         self.parent = parent
-        self.window=None
         def saveToPcapCallBack():
             for pkt in parent.packetHandler.fullPacketList:
                 wrpcap('filtered.pcap', pkt, append=True)
@@ -32,7 +32,14 @@ class MenuHeader(tk.Frame):
             if len(self.parent.packetHandler.sessions) == 0:
                 print("no sessions to graph")
                 return
-            self.window = NewWindow(graphType, self.parent)
+            GraphWindow(graphType, self.parent)
+
+        def IDSPathSelectStart():
+            directory = self.parent.snortPath if os.path.exists(self.parent.snortPath) else "/"
+            self.parent.snortPath = filedialog.askdirectory(initialdir=directory)
+
+        def IDSScan():
+            self.parent.IDSHandler.scanAllPackets()
 
         self.menuBar = tk.Menu(self)
         self.fileMenu = tk.Menu(self.menuBar, tearoff=0)
@@ -51,7 +58,12 @@ class MenuHeader(tk.Frame):
         self.analyzeMenu.add_command(label="Window scaling", command=lambda: graphStart("Window scaling"))
         self.analyzeMenu.add_command(label="Throughput", command=lambda: graphStart("Throughput"))
 
+        self.IPSMenu = tk.Menu(self.menuBar, tearoff=0)
+        self.IPSMenu.add_command(label="Alert Directory Select", command=IDSPathSelectStart)
+        self.IPSMenu.add_command(label="Threat Handling", command=saveToPcapCallBack)
+        self.IPSMenu.add_command(label="Scan Now", command=IDSScan)
 
         self.menuBar.add_cascade(label="File", menu=self.fileMenu)
         self.menuBar.add_cascade(label="Analyze", menu=self.analyzeMenu)
+        self.menuBar.add_cascade(label="IPS", menu=self.IPSMenu)
         parent.root.config(menu=self.menuBar)

@@ -3,7 +3,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
-class NewWindow(tk.Toplevel):
+class GraphWindow(tk.Toplevel):
     def __init__(self, gType, master=None):
         super().__init__(master=master)
         self.title("Graphs")

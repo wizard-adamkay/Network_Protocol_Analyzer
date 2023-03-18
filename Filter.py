@@ -46,13 +46,23 @@ class FilterBar(tk.Frame):
             if term == 'srcip':
                 if "ARP" in packet:
                     evalFilter.append(self.evaluate(packet["ARP"].psrc, op, right))
-                else:
+                elif "TCP" in packet or "UDP" in packet:
                     evalFilter.append(self.evaluate(packet.payload.src, op, right))
+                else:
+                    if hasattr(packet, "src"):
+                        evalFilter.append(self.evaluate(packet.src, op, right))
+                    else:
+                        evalFilter.append(False)
             elif term == 'dstip':
                 if "ARP" in packet:
                     evalFilter.append(self.evaluate(packet["ARP"].pdst, op, right))
-                else:
+                elif "TCP" in packet or "UDP" in packet:
                     evalFilter.append(self.evaluate(packet.payload.dst, op, right))
+                else:
+                    if hasattr(packet, "src"):
+                        evalFilter.append(self.evaluate(packet.dst, op, right))
+                    else:
+                        evalFilter.append(False)
             elif term == 'srcport':
                 if packet.haslayer("TCP") or packet.haslayer("UDP"):
                     evalFilter.append(self.evaluate(int(packet.payload.payload.sport), op, int(right)))
@@ -72,7 +82,6 @@ class FilterBar(tk.Frame):
                     evalFilter.append(False)
             elif term == 'protocol':
                 evalFilter.append(self.evaluateProto(packet, op, right))
-
             else:
                 raise ValueError(f"failed on term {term}")
             index+=3

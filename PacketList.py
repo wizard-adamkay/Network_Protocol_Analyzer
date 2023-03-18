@@ -89,8 +89,10 @@ class PacketListView(tk.Frame):
                 if proto == 6:
                     flags = packet["TCP"].flags
             else:
-                print("mystery packet:")
-                print(packet.show())
+                # print("mystery packet:")
+                # packet.show()
+                srcIP = packet.src if hasattr(packet, "src") else ""
+                dstIP = packet.dst if hasattr(packet, "dst") else ""
             self.packetList.insert(parent="", index=tk.END,
                                values=(num, time, srcIP, dstIP, srcport,
                                        dstport, flags), tags=(tag,))
@@ -99,7 +101,7 @@ class PacketListView(tk.Frame):
             print("Packet not handled!")
             self.unlistedPackets += 1
             print(f"{self.unlistedPackets} found so far")
-            print(packet.show())
+            packet.show()
         if bottom:
             self.packetList.yview_moveto(1)
 
