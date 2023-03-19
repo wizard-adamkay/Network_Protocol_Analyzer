@@ -41,8 +41,13 @@ class MenuHeader(tk.Frame):
             directory = self.parent.snortPath if os.path.exists(self.parent.snortPath) else "/"
             self.parent.snortPath = filedialog.askdirectory(initialdir=directory)
 
+        def IDSSnortConfPathSelect():
+            directory = self.parent.snortConfPath if os.path.exists(self.parent.snortConfPath) else "/"
+            self.parent.snortConfPath = filedialog.askopenfilename(initialdir=directory, filetypes=(('Config Files', '*.conf'), ('All Files','*.*')))
+
+
         def IDSScan():
-            self.parent.IDSHandler.scanAllPackets()
+            self.parent.IDSHandler.scanHandle()
 
         self.menuBar = tk.Menu(self)
         self.fileMenu = tk.Menu(self.menuBar, tearoff=0)
@@ -63,6 +68,7 @@ class MenuHeader(tk.Frame):
 
         self.IPSMenu = tk.Menu(self.menuBar, tearoff=0)
         self.IPSMenu.add_command(label="Alert Directory Select", command=IDSPathSelectStart)
+        self.IPSMenu.add_command(label="Snort Conf Select", command=IDSSnortConfPathSelect)
         self.IPSMenu.add_command(label="Threat Handling", command=saveToPcapCallBack)
         self.IPSMenu.add_command(label="Scan Now", command=IDSScan)
 

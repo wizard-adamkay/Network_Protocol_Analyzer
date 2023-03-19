@@ -14,6 +14,7 @@ class ActionBar(tk.Frame):
             self.started = True
             queue = self.sniffer.start()
             self.parent.root.after(0, self.packet_adder, queue)
+            self.parent.root.after(5000, self.activeScanning)
             self.stopCapture["state"] = "normal"
             self.startCapture["state"] = "disabled"
 
@@ -35,3 +36,9 @@ class ActionBar(tk.Frame):
             self.parent.packetHandler.handleNewPacket(q.get_nowait())
         if self.started:
             self.parent.root.after(1, self.packet_adder, q)
+
+    def activeScanning(self):
+        if self.started:
+            print("SCANNING")
+            self.parent.IDSHandler.scanAllPackets()
+            self.parent.root.after(5000, self.activeScanning)

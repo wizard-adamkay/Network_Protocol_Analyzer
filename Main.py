@@ -8,11 +8,16 @@ from Filter import FilterBar
 from PacketHandler import PacketHandler
 from PacketDetailList import PacketDetailListView
 from IDSHandler import IDSHandler
+import socket
+
+
+
 
 class MainApp(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)
         self.snortPath = "/var/log/snort"
+        self.snortConfPath = "/root/Downloads/snort/snort-2.9.20/etc/snort.conf"
         self.root = parent
         self.root.geometry("900x650")
         self.root.title("Wirewhale")
@@ -24,6 +29,11 @@ class MainApp(tk.Frame):
         self.actionBar = ActionBar(self)
         self.packetListView = PacketListView(self)
         self.filterBar = FilterBar(self)
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        self.IPAddr = s.getsockname()[0]
+        s.close()
 
         self.menu.grid(row=0, sticky=tk.NW)
         self.actionBar.grid(row=1, sticky=tk.NW)

@@ -14,6 +14,7 @@ class PacketListView(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.displayedPackets = []
         self.displayedPacketsNum = []
+        self.threatsPacketNum = []
         self.packetList = ttk.Treeview(self, selectmode='browse')
         self.verscrlbar = tk.Scrollbar(self,
                                    orient="vertical",
@@ -22,7 +23,7 @@ class PacketListView(tk.Frame):
         self.popupMenu = tk.Menu(self, tearoff=0)
         self.popupMenu.add_command(label="Toggle Mark", command=self.toggleMark)
         self.popupMenu.add_command(label="Kill", command=self.killConversation)
-        self.popupMenu.add_command(label="Block IP")
+        self.popupMenu.add_command(label="Block IP", command=self.blockIP)
         self.packetList["columns"] = ("0", "1", "2", "3", "4", "5", "6")
         self.columnNames = ("Packet Number", "time","Source IP", "Destination IP", "Source Port", "Destination Port", "Flags")
         self.packetList['show'] = 'headings'
@@ -34,7 +35,6 @@ class PacketListView(tk.Frame):
         self.packetList.tag_configure("TCP", background="green")
         self.packetList.tag_configure("UDP", background="cyan")
         self.packetList.tag_configure("ARP", background="orange")
-
 
         self.packetList.bind("<<TreeviewSelect>>", self.selectPacket)
         self.packetList.bind("<Button-3>", self.popup)
@@ -106,6 +106,8 @@ class PacketListView(tk.Frame):
                 dstIP = packet.dst if hasattr(packet, "dst") else ""
             if num - 1 in self.markedPackets:
                 tag += ("Mark",)
+            if num - 1 in self.threatsPacketNum:
+                tag += ("Threat",)
             self.packetList.insert(parent="", index=tk.END,
                                values=(num, time, srcIP, dstIP, srcport,
                                        dstport, flags), tags=tag)
@@ -139,7 +141,9 @@ class PacketListView(tk.Frame):
             tags = tuple(taglist)
             self.markedPackets.remove(index)
         else:
-            tags += ("Mark",)
+            taglist = list(tags)
+            taglist.append("Mark")
+            tags = tuple(taglist)
             self.markedPackets.append(index)
         self.packetList.item(iid[0], tags=tags)
 
@@ -150,9 +154,15 @@ class PacketListView(tk.Frame):
             return
         index = self.packetList.item(iid[0])["values"][0] - 1
         packet = self.parent.packetHandler.fullPacketList[index]
-        if "TCP" in packet:
-            self.parent.IDSHandler.killConversation(packet)
+        self.parent.IDSHandler.killConversation(packet)
 
+    def blockIP(self):
+        iid = self.packetList.selection()
+        if not iid:
+            return
+        index = self.packetList.item(iid[0])["values"][0] - 1
+        packet = self.parent.packetHandler.fullPacketList[index]
+        self.parent.IDSHandler.blockIP(packet)
 
     def nav(self, initialY):
         while self.navigating:
@@ -165,6 +175,19 @@ class PacketListView(tk.Frame):
         self.navigating = False if self.navigating else True
         if self.navigating:
             threading.Thread(target=self.nav, args=(event.y,)).start()
+
+    def markAsThreat(self, index):
+        if index in self.threatsPacketNum:
+            return
+        self.threatsPacketNum.append(index)
+        if index not in self.displayedPacketsNum:
+            return
+        iid = self.packetList.get_children()[index]
+        tags = self.packetList.item(iid, "tags")
+        tagsList = list(tags)
+        tagsList.append("Threat")
+        tags = tuple(tagsList)
+        self.packetList.item(iid, tags=tags)
 
     def clear(self):
         self.packetList.delete(*self.packetList.get_children())
