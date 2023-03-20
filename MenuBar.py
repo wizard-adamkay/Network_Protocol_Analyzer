@@ -2,21 +2,26 @@ import tkinter as tk
 from scapy.all import *
 from tkinter import filedialog
 from Graph import GraphWindow
+from Summary import Summary
+from Report import Report
 
 
 class MenuHeader(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)
         self.parent = parent
+        self.fileName = ""
         def saveToPcapCallBack():
             fileName = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".pcap", title="Save as", filetypes=(("PCAP Files", "*.pcap*"),("All Files", "*.*")))
             wrpcap(fileName, self.parent.packetHandler.fullPacketList)
+            self.fileName = fileName
 
         def saveSelectedToPcapCallBack():
             fileName = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".pcap",
                                                     title="Save as",
                                                     filetypes=(("PCAP Files", "*.pcap*"), ("All Files", "*.*")))
             wrpcap(fileName, self.parent.packetDetailListView.displayedPackets)
+            self.fileName = fileName
 
         def loadFromPcap():
             filename = filedialog.askopenfilename(initialdir="/",
@@ -30,12 +35,25 @@ class MenuHeader(tk.Frame):
             self.parent.packetHandler.clear()
             for packet in pcap:
                 self.parent.packetHandler.handleNewPacket(packet)
+            self.fileName = filename
 
         def graphStart(graphType):
             if len(self.parent.packetHandler.sessions) == 0:
                 print("no sessions to graph")
                 return
             GraphWindow(graphType, self.parent)
+
+        def summaryStart():
+            if len(self.parent.packetHandler.fullPacketList) == 0:
+                print("no packets to summarize")
+                return
+            Summary(self)
+
+        def reportStart():
+            if len(self.parent.packetHandler.fullPacketList) == 0:
+                print("no packets to report")
+                return
+            Report(self)
 
         def IDSPathSelectStart():
             directory = self.parent.snortPath if os.path.exists(self.parent.snortPath) else "/"
@@ -58,8 +76,8 @@ class MenuHeader(tk.Frame):
         self.fileMenu.add_command(label="Exit", command=self.parent.root.destroy)
 
         self.analyzeMenu = tk.Menu(self.menuBar, tearoff=0)
-        self.analyzeMenu.add_command(label="Summary", command=saveToPcapCallBack)
-        self.analyzeMenu.add_command(label="Report", command=saveToPcapCallBack)
+        self.analyzeMenu.add_command(label="Summary", command=summaryStart)
+        self.analyzeMenu.add_command(label="Report", command=reportStart)
         self.analyzeMenu.add_separator()
         self.analyzeMenu.add_command(label="Time sequence", command=lambda: graphStart("Time sequence"))
         self.analyzeMenu.add_command(label="Round trip time", command=lambda: graphStart("Round trip time"))
@@ -69,7 +87,6 @@ class MenuHeader(tk.Frame):
         self.IPSMenu = tk.Menu(self.menuBar, tearoff=0)
         self.IPSMenu.add_command(label="Alert Directory Select", command=IDSPathSelectStart)
         self.IPSMenu.add_command(label="Snort Conf Select", command=IDSSnortConfPathSelect)
-        self.IPSMenu.add_command(label="Threat Handling", command=saveToPcapCallBack)
         self.IPSMenu.add_command(label="Scan Now", command=IDSScan)
 
         self.menuBar.add_cascade(label="File", menu=self.fileMenu)

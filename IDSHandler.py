@@ -17,10 +17,11 @@ class IDSHandler:
         if exists("temp.pcap"):
             remove("temp.pcap")
         wrpcap("temp.pcap", self.parent.packetHandler.fullPacketList)
-        print(self.parent.snortConfPath)
         s = subprocess.Popen(["snort", "-Afull", "-X", "-c", self.parent.snortConfPath, "-r", "temp.pcap", "-q"])
         s.communicate()
         self.scanAllPackets()
+        if exists("temp.pcap"):
+            remove("temp.pcap")
 
     def scanAllPackets(self):
         if not self.parent.packetHandler.fullPacketList:

@@ -17,6 +17,7 @@ class ActionBar(tk.Frame):
             self.parent.root.after(5000, self.activeScanning)
             self.stopCapture["state"] = "normal"
             self.startCapture["state"] = "disabled"
+            self.parent.menu.fileName = ""
 
         def stopCapture():
             self.started = False
