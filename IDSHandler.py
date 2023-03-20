@@ -12,8 +12,11 @@ class IDSHandler:
         self.parent = parent
         self.path = self.parent.snortPath
         self.threats = []
+        self.scanIndexes = [0, 0]
+        self.lastReachedAlertLine = 0
 
     def scanOnce(self):
+        self.reset()
         if exists("temp.pcap"):
             remove("temp.pcap")
         wrpcap("temp.pcap", self.parent.packetHandler.fullPacketList)
@@ -28,7 +31,7 @@ class IDSHandler:
             return
         filesInDir = [f for f in listdir(self.path) if isfile(join(self.path, f))]
         lastPacketTime = self.parent.packetHandler.fullPacketList[-1].time
-        firstPacketTime = self.parent.packetHandler.fullPacketList[0].time
+        firstPacketTime = self.parent.packetHandler.fullPacketList[self.scanIndexes[0]].time
         for file in filesInDir:
             if "snort.log" in file:
                 if getsize(self.path+'/'+file) == 0:
@@ -38,11 +41,12 @@ class IDSHandler:
                     continue
                 for packet in pcap:
                     try:
-                        index = self.parent.packetHandler.fullPacketList.index(packet)
+                        index = self.parent.packetHandler.fullPacketList.index(packet, self.scanIndexes[0], -1)
                     except ValueError:
                         continue
                     self.parent.packetListView.markAsThreat(index)
-        print("scan complete")
+        self.scanIndexes[0] = self.scanIndexes[1]
+        self.scanIndexes[1] = len(self.parent.packetHandler.fullPacketList) - 1
 
     def scanHandle(self):
         if not self.parent.packetHandler.fullPacketList:
@@ -67,3 +71,37 @@ class IDSHandler:
         if ipToBlock is None:
             return
         subprocess.Popen(["iptables", "-A", "INPUT", "-s", ipToBlock, "-j", "DROP"])
+
+    def addThreat(self, packet):
+        alertFile = self.parent.snortPath + "/alert"
+        if not exists(alertFile):
+            return
+        file = open(alertFile, 'r')
+        for index in range(self.lastReachedAlertLine):
+            file.readline()
+        while True:
+            try:
+                line = file.readline()
+                if not line:
+                    break
+                header = line.strip()
+                classification = file.readline().strip()
+                dateSrcDest = file.readline().strip()
+                proto = file.readline().strip()
+                flags = file.readline().strip()
+                print(f"header: {header}")
+                print(f"classification: {classification}")
+                print(f"dateSrcDest: {dateSrcDest}")
+                print(f"proto: {proto}")
+                print(f"flags: {flags}")
+                file.readline()
+                self.lastReachedAlertLine += 6
+            except:
+                break
+        file.close()
+
+
+    def reset(self):
+        self.threats = []
+        self.scanIndexes = [0, 0]
+        self.lastReachedAlertLine = 0

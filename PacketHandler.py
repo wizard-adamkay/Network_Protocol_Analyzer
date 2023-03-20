@@ -16,6 +16,7 @@ class PacketHandler:
             self.parent.packetListView.addToList(len(self.fullPacketList), packet)
 
     def clear(self):
+        self.parent.IDSHandler.reset()
         self.fullPacketList.clear()
         self.sessions.clear()
         if self.parent.actionBar.started:
