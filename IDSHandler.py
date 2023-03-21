@@ -1,7 +1,7 @@
 from os import listdir, remove
 from os.path import isfile, join, exists, getsize
 from scapy.all import rdpcap
-# from psutil import process_iter
+from psutil import process_iter
 from signal import SIGTERM
 import subprocess
 from scapy.utils import wrpcap
@@ -12,8 +12,11 @@ class IDSHandler:
         self.parent = parent
         self.path = self.parent.snortPath
         self.threats = []
+        self.threatsIndex = []
         self.scanIndexes = [0, 0]
         self.lastReachedAlertLine = 0
+        self.alertFileSize=0
+        self.alerts = []
 
     def scanOnce(self):
         self.reset()
@@ -32,6 +35,7 @@ class IDSHandler:
         filesInDir = [f for f in listdir(self.path) if isfile(join(self.path, f))]
         lastPacketTime = self.parent.packetHandler.fullPacketList[-1].time
         firstPacketTime = self.parent.packetHandler.fullPacketList[self.scanIndexes[0]].time
+        newThreat = []
         for file in filesInDir:
             if "snort.log" in file:
                 if getsize(self.path+'/'+file) == 0:
@@ -44,9 +48,21 @@ class IDSHandler:
                         index = self.parent.packetHandler.fullPacketList.index(packet, self.scanIndexes[0], -1)
                     except ValueError:
                         continue
-                    self.parent.packetListView.markAsThreat(index)
+                    if index not in self.threatsIndex:
+                        self.threatsIndex.append(index)
+                        newThreat.append(packet)
+                        self.parent.packetListView.markAsThreat(index)
         self.scanIndexes[0] = self.scanIndexes[1]
         self.scanIndexes[1] = len(self.parent.packetHandler.fullPacketList) - 1
+        alertFile = self.parent.snortPath + "/alert"
+        if not exists(alertFile):
+            return
+        alertSize = getsize(alertFile)
+        if self.alertFileSize != alertSize:
+            self.updateAlerts()
+            self.alertFileSize = alertSize
+        for threat in newThreat:
+            self.findAlert(threat)
 
     def scanHandle(self):
         if not self.parent.packetHandler.fullPacketList:
@@ -57,13 +73,13 @@ class IDSHandler:
             self.scanOnce()
 
     def killConversation(self, packet):
-        pass
-    #     if "TCP" not in packet and "UDP" not in packet:
-    #         return
-    #     for proc in process_iter():
-    #         for conns in proc.connections(kind='inet'):
-    #             if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
-    #                 proc.send_signal(SIGTERM)
+        # pass
+        if "TCP" not in packet and "UDP" not in packet:
+            return
+        for proc in process_iter():
+            for conns in proc.connections(kind='inet'):
+                if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
+                    proc.send_signal(SIGTERM)
 
 
     def blockIP(self, packet):
@@ -73,36 +89,35 @@ class IDSHandler:
             return
         subprocess.Popen(["iptables", "-A", "INPUT", "-s", ipToBlock, "-j", "DROP"])
 
-    def addThreat(self, packet):
-        alertFile = self.parent.snortPath + "/alert"
-        if not exists(alertFile):
-            return
-        file = open(alertFile, 'r')
-        for index in range(self.lastReachedAlertLine):
-            file.readline()
-        while True:
-            try:
-                line = file.readline()
-                if not line:
-                    break
-                header = line.strip()
-                classification = file.readline().strip()
-                dateSrcDest = file.readline().strip()
-                proto = file.readline().strip()
-                flags = file.readline().strip()
-                print(f"header: {header}")
-                print(f"classification: {classification}")
-                print(f"dateSrcDest: {dateSrcDest}")
-                print(f"proto: {proto}")
-                print(f"flags: {flags}")
-                file.readline()
-                self.lastReachedAlertLine += 6
-            except:
-                break
-        file.close()
-
-
     def reset(self):
         self.threats = []
         self.scanIndexes = [0, 0]
         self.lastReachedAlertLine = 0
+
+    def findAlert(self, threat):
+        try:
+            packetSrcIp = threat.payload.src
+            packetDstIp = threat.payload.dst
+            packetSrcPort = ""
+            packetDstPort = ""
+            packetType = "ICMP" if "ICMP" in threat else ""
+            packetType = "TCP" if "TCP" in threat else threat
+            packetType = "UDP" if "UDP" in threat else threat
+            if "TCP" in threat or "UDP" in threat:
+                packetSrcPort = threat["sport"]
+                packetSrcPort = threat["dport"]
+            for alert in self.alerts:
+                if packetType in alert[3]:
+                    pass
+        except Exception as e:
+            print(e)
+
+    def updateAlerts(self):
+        file = open(self.parent.snortPath + "/alert")
+        all = file.read()
+        alertsPreprocessed = all.split('\n\n')[0:-1]
+        alerts = []
+        for alert in alertsPreprocessed:
+            alerts.append(alert.split('\n'))
+        self.alerts = alerts
+        file.close()

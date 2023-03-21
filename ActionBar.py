@@ -1,6 +1,7 @@
 import tkinter as tk
 from Sniffer import Sniffer
 
+
 class ActionBar(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)
@@ -14,7 +15,7 @@ class ActionBar(tk.Frame):
             self.started = True
             queue = self.sniffer.start()
             self.parent.root.after(0, self.packet_adder, queue)
-            # self.parent.root.after(5000, self.activeScanning)
+            self.parent.root.after(5000, self.activeScanning)
             self.stopCapture["state"] = "normal"
             self.startCapture["state"] = "disabled"
             self.parent.menu.fileName = ""
@@ -40,6 +41,5 @@ class ActionBar(tk.Frame):
 
     def activeScanning(self):
         if self.started:
-            print("SCANNING")
             self.parent.IDSHandler.scanAllPackets()
             self.parent.root.after(5000, self.activeScanning)

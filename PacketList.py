@@ -180,7 +180,6 @@ class PacketListView(tk.Frame):
         if index in self.threatsPacketNum:
             return
         self.threatsPacketNum.append(index)
-        self.parent.IDSHandler.addThreat(self.parent.packetHandler.fullPacketList[index])
         if index + 1 not in self.displayedPacketsNum:
             return
         relIndex = self.displayedPacketsNum.index(index + 1)
