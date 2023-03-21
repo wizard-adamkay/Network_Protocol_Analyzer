@@ -93,3 +93,13 @@ class MenuHeader(tk.Frame):
         self.menuBar.add_cascade(label="Analyze", menu=self.analyzeMenu)
         self.menuBar.add_cascade(label="IPS", menu=self.IPSMenu)
         parent.root.config(menu=self.menuBar)
+
+# for testing
+    def loadPcap(self):
+        filename = "test.pcap"
+        pcap = rdpcap(filename)
+        self.parent.packetListView.markedPackets.clear()
+        self.parent.packetHandler.clear()
+        for packet in pcap:
+            self.parent.packetHandler.handleNewPacket(packet)
+        self.fileName = filename

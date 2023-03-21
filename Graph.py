@@ -10,6 +10,8 @@ class GraphWindow(tk.Toplevel):
         self.geometry("1000x600")
         self.options = ["Time sequence", "Round trip time", "Window scaling", "Throughput"]
         self.direction = 0
+        self.line1 = None
+        self.line2 = None
         self.graphType = tk.StringVar()
         self.graphType.set(gType)
         def updateGraphCB(a):
@@ -95,7 +97,7 @@ class GraphWindow(tk.Toplevel):
                 x2.append(packet.time - initialTime)
                 inFlight = packet.payload.len - 40 + packet["TCP"].seq - initialSeq - (lastAck - initialSeq)
                 y2.append(inFlight)
-            self.plot1.plot(x2, y2, 'ro', linestyle="-")
+            self.line2, = self.plot1.plot(x2, y2, 'ro', linestyle="-")
             self.plot1.set_xlabel("time in seconds since first packet")
             self.plot1.set_ylabel("window size")
         elif self.graphType.get() == "Throughput":
@@ -106,7 +108,7 @@ class GraphWindow(tk.Toplevel):
             self.plot1.set_xlabel("time in seconds since first packet")
             self.plot1.set_ylabel("segment length")
 
-        self.plot1.plot(x, y, 'bo', linestyle="-")
+        self.line1, = self.plot1.plot(x, y, 'bo', linestyle="-")
         self.plot1.get_yaxis().get_major_formatter().set_useOffset(False)
         self.plot1.get_yaxis().get_major_formatter().set_scientific(False)
         self.canvas.draw()

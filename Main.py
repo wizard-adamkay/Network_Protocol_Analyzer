@@ -11,8 +11,6 @@ from IDSHandler import IDSHandler
 import socket
 
 
-
-
 class MainApp(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)

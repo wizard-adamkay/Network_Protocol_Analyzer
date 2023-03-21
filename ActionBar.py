@@ -14,7 +14,7 @@ class ActionBar(tk.Frame):
             self.started = True
             queue = self.sniffer.start()
             self.parent.root.after(0, self.packet_adder, queue)
-            self.parent.root.after(5000, self.activeScanning)
+            # self.parent.root.after(5000, self.activeScanning)
             self.stopCapture["state"] = "normal"
             self.startCapture["state"] = "disabled"
             self.parent.menu.fileName = ""
