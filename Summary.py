@@ -12,18 +12,19 @@ class Summary(tk.Toplevel):
         super().__init__(master=master)
         self.title("Summary")
         self.geometry("600x450")
+        fileName = self.master.fileName
         if self.master.fileName == "":
             fileFormat = "PCAP"
+            fileName = "temp2.pcap"
         else:
             fileFormat = splitext(self.master.fileName)[1]
-
         if exists("temp2.pcap"):
             remove("temp2.pcap")
         wrpcap("temp2.pcap", self.master.parent.packetHandler.fullPacketList)
-        file_stats = stat("temp2.pcap")
+        file_stats = stat(fileName)
         fileBytes = file_stats.st_size
         hasher = hashlib.sha1()
-        with open("temp2.pcap", 'rb') as file:
+        with open(fileName, 'rb') as file:
             chunk = 0
             while chunk != b'':
                 chunk = file.read(1024)
@@ -31,14 +32,14 @@ class Summary(tk.Toplevel):
         fileHash = hasher.hexdigest()
         packetList = self.master.parent.packetHandler.fullPacketList
         displayedPacketList = self.master.parent.packetListView.displayedPackets
-        firstPacketTime = datetime.datetime.fromtimestamp(packetList[0].time).strftime('%Y-%m-%d %H:%M:%S')
-        lastPacketTime = datetime.datetime.fromtimestamp(packetList[-1].time).strftime('%Y-%m-%d %H:%M:%S')
-        elapsedTime = packetList[-1].time - packetList[0].time
+        firstPacketTime = datetime.datetime.fromtimestamp(float(packetList[0].time)).strftime('%Y-%m-%d %H:%M:%S')
+        lastPacketTime = datetime.datetime.fromtimestamp(float(packetList[-1].time)).strftime('%Y-%m-%d %H:%M:%S')
+        elapsedTime = float(packetList[-1].time) - float(packetList[0].time)
         elapsedTime = 1.0 if elapsedTime == 0 else elapsedTime
         capturedPackets = len(packetList)
         displayedPackets = len(displayedPacketList)
         capturedTimeSpan = elapsedTime
-        displayedTimeSpan = displayedPacketList[-1].time - displayedPacketList[0].time
+        displayedTimeSpan = float(displayedPacketList[-1].time) - float(displayedPacketList[0].time)
         displayedTimeSpan = 1.0 if displayedTimeSpan == 0 else displayedTimeSpan
         capturedPacketsPerSecond = capturedPackets / capturedTimeSpan
         displayedPacketsPerSecond = displayedPackets / displayedTimeSpan
@@ -53,7 +54,7 @@ class Summary(tk.Toplevel):
         capturedBytesPerSecond = capturedPacketSize / elapsedTime
         displayedBytesPerSecond = displayedPacketSize / displayedTimeSpan
         self.fileLabel = tk.Label(self, text="File:", font='bold')
-        self.nameLabel = tk.Label(self, text=("\tName:\t\t\t" + self.master.fileName))
+        self.nameLabel = tk.Label(self, text=("\tName:\t\t" + self.master.fileName))
         self.lengthLabel = tk.Label(self, text=("\tLength(bytes):\t" + str(fileBytes)))
         self.hashLabel = tk.Label(self, text=("\tHash(sha-1):\t" + fileHash))
         self.formatLabel = tk.Label(self, text=("\tFormat:\t\t" + fileFormat))

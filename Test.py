@@ -4,6 +4,7 @@ import tkinter as tk
 from scapy.layers.inet import IP, TCP, UDP, Ether
 from Summary import Summary
 from Graph import GraphWindow
+from Report import Report
 import datetime
 
 tcpPacket = Ether() / IP(dst="192.168.0.11", src="192.168.0.12") / TCP(sport=25352, dport=22, flags="S")
@@ -86,19 +87,33 @@ class TestCases(unittest.TestCase):
         self.assertEqual(packetHandler.fullPacketList, [])
         self.assertTrue(len(packetDisplay.get_children()) == 0)
         menu = self.app.menu
-        menu.loadPcap()
+        menu.loadPcap("test.pcap")
         self.assertTrue(len(packetHandler.fullPacketList) == 614)
         self.assertTrue(len(packetDisplay.get_children()) == 614)
 
     def test_ids(self):
-        pass
+        menu = self.app.menu
+        menu.loadPcap("sshtest.pcap")
+        IDSHandler = self.app.IDSHandler
+        self.assertTrue(len(IDSHandler.threatsByIP) == 0)
+        menu.IPSMenu.invoke(2)
+        self.assertTrue(len(IDSHandler.threatsByIP) == 1)
 
     def test_report(self):
-        pass
+        menu = self.app.menu
+        menu.loadPcap("sshtest.pcap")
+        menu.IPSMenu.invoke(2)
+        report = Report(menu)
+        self.assertTrue("9" in report.threatsFoundLabel["text"])
+        self.assertTrue("1" in report.uniqueThreatsLabel["text"])
+        self.assertTrue("1" in report.uniqueIPThreatsLabel["text"])
+        self.assertTrue("SSH Bruteforce" in report.typesOfAttacksLabel["text"])
+        self.assertTrue("192.168.0.23" in report.ipsUsedLabel["text"])
+
 
     def test_graph(self):
         menu = self.app.menu
-        menu.loadPcap()
+        menu.loadPcap("test.pcap")
         graph = GraphWindow("Time sequence", self.app)
         self.assertTrue(len(graph.line1.get_xdata()) == 6)
 
@@ -109,13 +124,12 @@ class TestCases(unittest.TestCase):
         packetDetails = self.app.packetDetailListView
         packetDetailList = packetDetails.packetDetailList
         packetBytesDisplay = packetDetails.packetBytesDisplay
-        menu.loadPcap()
+        menu.loadPcap("test.pcap")
         ids = packetDisplay.get_children()
         packetDisplay.selection_set(ids[0])
         packetListView.selectPacket(1)
         self.assertTrue(len(packetDetailList.get_children()) != 0)
         self.assertTrue(len(packetBytesDisplay.get("1.0", tk.END)) != 0)
-
 
 
 if __name__ == '__main__':

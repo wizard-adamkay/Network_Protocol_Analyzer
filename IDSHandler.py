@@ -1,7 +1,7 @@
 from os import listdir, remove
 from os.path import isfile, join, exists, getsize
 from scapy.all import rdpcap
-# from psutil import process_iter
+from psutil import process_iter
 from signal import SIGTERM
 import subprocess
 from scapy.utils import wrpcap
@@ -11,12 +11,11 @@ class IDSHandler:
     def __init__(self, parent=None):
         self.parent = parent
         self.path = self.parent.snortPath
-        self.threats = []
         self.threatsIndex = []
         self.scanIndexes = [0, 0]
-        self.lastReachedAlertLine = 0
         self.alertFileSize=0
         self.alerts = []
+        self.threatsByIP = {}
 
     def scanOnce(self):
         self.reset()
@@ -64,6 +63,7 @@ class IDSHandler:
         for threat in newThreat:
             self.findAlert(threat)
 
+
     def scanHandle(self):
         if not self.parent.packetHandler.fullPacketList:
             return
@@ -73,13 +73,13 @@ class IDSHandler:
             self.scanOnce()
 
     def killConversation(self, packet):
-        pass
-        # if "TCP" not in packet and "UDP" not in packet:
-        #     return
-        # for proc in process_iter():
-        #     for conns in proc.connections(kind='inet'):
-        #         if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
-        #             proc.send_signal(SIGTERM)
+        # pass
+        if "TCP" not in packet and "UDP" not in packet:
+            return
+        for proc in process_iter():
+            for conns in proc.connections(kind='inet'):
+                if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
+                    proc.send_signal(SIGTERM)
 
 
     def blockIP(self, packet):
@@ -90,9 +90,10 @@ class IDSHandler:
         subprocess.Popen(["iptables", "-A", "INPUT", "-s", ipToBlock, "-j", "DROP"])
 
     def reset(self):
-        self.threats = []
+        self.threatsIndex = []
         self.scanIndexes = [0, 0]
-        self.lastReachedAlertLine = 0
+        self.alertFileSize=0
+        self.threatsByIP = {}
 
     def findAlert(self, threat):
         try:
@@ -101,14 +102,19 @@ class IDSHandler:
             packetSrcPort = ""
             packetDstPort = ""
             packetType = "ICMP" if "ICMP" in threat else ""
-            packetType = "TCP" if "TCP" in threat else threat
-            packetType = "UDP" if "UDP" in threat else threat
+            packetType = "TCP" if "TCP" in threat else packetType
+            packetType = "UDP" if "UDP" in threat else packetType
             if "TCP" in threat or "UDP" in threat:
-                packetSrcPort = threat["sport"]
-                packetSrcPort = threat["dport"]
+                packetSrcPort = ":" + str(threat.sport)
+                packetDstPort = ":" + str(threat.dport)
             for alert in self.alerts:
                 if packetType in alert[3]:
-                    pass
+                    if packetSrcIp+packetSrcPort in alert[2] and packetDstIp+packetDstPort in alert[2]:
+                        attackType = " ".join(alert[0].split()[2:-1])
+                        if packetSrcIp in self.threatsByIP:
+                            self.threatsByIP.get(packetSrcIp).add(attackType)
+                        else:
+                            self.threatsByIP.update({packetSrcIp:{attackType}})
         except Exception as e:
             print(e)
 

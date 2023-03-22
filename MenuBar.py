@@ -95,8 +95,7 @@ class MenuHeader(tk.Frame):
         parent.root.config(menu=self.menuBar)
 
 # for testing
-    def loadPcap(self):
-        filename = "test.pcap"
+    def loadPcap(self, filename):
         pcap = rdpcap(filename)
         self.parent.packetListView.markedPackets.clear()
         self.parent.packetHandler.clear()

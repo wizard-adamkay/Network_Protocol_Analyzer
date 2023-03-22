@@ -40,7 +40,7 @@ class ActionBar(tk.Frame):
             self.parent.root.after(1, self.packet_adder, q)
 
     def activeScanning(self):
-        pass
-        # if self.started:
-            # self.parent.IDSHandler.scanAllPackets()
-            # self.parent.root.after(5000, self.activeScanning)
+        # pass
+        if self.started:
+            self.parent.IDSHandler.scanAllPackets()
+            self.parent.root.after(5000, self.activeScanning)
