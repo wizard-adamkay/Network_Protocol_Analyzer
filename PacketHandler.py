@@ -22,6 +22,8 @@ class PacketHandler:
         if self.parent.actionBar.started:
             self.parent.actionBar.stopCapture()
         self.parent.packetListView.clear()
+        self.parent.packetListView.markedPackets.clear()
+        self.parent.packetListView.threatsPacketNum.clear()
 
     def getSessionKey(self, packet):
         s=""
