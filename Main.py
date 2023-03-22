@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 import tkinter as tk
+from scapy.arch import get_if_addr
+from scapy.config import conf
 from MenuBar import MenuHeader
 from PacketList import PacketListView
 from ActionBar import ActionBar
@@ -8,7 +10,6 @@ from Filter import FilterBar
 from PacketHandler import PacketHandler
 from PacketDetailList import PacketDetailListView
 from IDSHandler import IDSHandler
-import socket
 
 
 class MainApp(tk.Frame):
@@ -27,11 +28,7 @@ class MainApp(tk.Frame):
         self.actionBar = ActionBar(self)
         self.packetListView = PacketListView(self)
         self.filterBar = FilterBar(self)
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        self.IPAddr = s.getsockname()[0]
-        s.close()
+        self.IPAddr = get_if_addr(conf.iface)
 
         self.menu.grid(row=0, sticky=tk.NW)
         self.actionBar.grid(row=1, sticky=tk.NW)
