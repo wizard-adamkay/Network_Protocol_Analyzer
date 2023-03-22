@@ -49,7 +49,6 @@ class Report(tk.Toplevel):
         self.uniqueThreatsLabel = tk.Label(self, text=("\tUnique Attacks Found:\t" + str(len(uniqueAttacks))))
         self.typesOfAttacksLabel = tk.Label(self, text=("\tTypes of Attacks:\t\t"+uniqueAttackString))
         self.uniqueIPThreatsLabel = tk.Label(self, text=("\tUnique Malicious IPs:\t" + str(threatsUniqueIP)))
-        print(ipsUsed)
         self.ipsUsedLabel = tk.Label(self, text=("\tMalicious IPs:\t\t" + ipsUsed))
         self.threatsByIPLabel = tk.Label(self, text="Threats By IP:", font='bold')
 

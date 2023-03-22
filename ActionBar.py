@@ -11,6 +11,7 @@ class ActionBar(tk.Frame):
 
         def startCapture():
             self.parent.packetListView.markedPackets.clear()
+            self.parent.packetListView.threatsPacketNum.clear()
             self.parent.packetHandler.clear()
             self.started = True
             queue = self.sniffer.start()

@@ -194,3 +194,4 @@ class PacketListView(tk.Frame):
         self.packetList.delete(*self.packetList.get_children())
         self.displayedPackets = []
         self.displayedPacketsNum = []
+
