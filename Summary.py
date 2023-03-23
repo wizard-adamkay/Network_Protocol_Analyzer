@@ -31,7 +31,9 @@ class Summary(tk.Toplevel):
                 hasher.update(chunk)
         fileHash = hasher.hexdigest()
         packetList = self.master.parent.packetHandler.fullPacketList
-        displayedPacketList = self.master.parent.packetListView.displayedPackets
+        displayedPacketList = []
+        for index in self.master.parent.packetListView.displayedPacketsNum:
+            displayedPacketList.append(self.master.parent.packetHandler.fullPacketList[index - 1])
         firstPacketTime = datetime.datetime.fromtimestamp(float(packetList[0].time)).strftime('%Y-%m-%d %H:%M:%S')
         lastPacketTime = datetime.datetime.fromtimestamp(float(packetList[-1].time)).strftime('%Y-%m-%d %H:%M:%S')
         elapsedTime = float(packetList[-1].time) - float(packetList[0].time)

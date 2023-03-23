@@ -12,7 +12,7 @@ class PacketListView(tk.Frame):
         self.markedPackets = []
         self.grid_columnconfigure(0, weight=3)
         self.grid_columnconfigure(0, weight=1)
-        self.displayedPackets = []
+        self.grid_columnconfigure(0, weight=1)
         self.displayedPacketsNum = []
         self.threatsPacketNum = []
         self.packetList = ttk.Treeview(self, selectmode='browse')
@@ -68,7 +68,6 @@ class PacketListView(tk.Frame):
 
     def addToList(self, num, packet):
         bottom = True if self.packetList.yview()[1] == 1 else False
-        self.displayedPackets.append(packet)
         self.displayedPacketsNum.append(num)
         try:
             time = packet.time
@@ -192,6 +191,5 @@ class PacketListView(tk.Frame):
 
     def clear(self):
         self.packetList.delete(*self.packetList.get_children())
-        self.displayedPackets = []
         self.displayedPacketsNum = []
 

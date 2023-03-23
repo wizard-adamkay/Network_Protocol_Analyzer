@@ -110,7 +110,6 @@ class TestCases(unittest.TestCase):
         self.assertTrue("SSH Bruteforce" in report.typesOfAttacksLabel["text"])
         self.assertTrue("192.168.0.23" in report.ipsUsedLabel["text"])
 
-
     def test_graph(self):
         menu = self.app.menu
         menu.loadPcap("test.pcap")
@@ -126,10 +125,12 @@ class TestCases(unittest.TestCase):
         packetBytesDisplay = packetDetails.packetBytesDisplay
         menu.loadPcap("test.pcap")
         ids = packetDisplay.get_children()
+        self.assertTrue(len(packetDetailList.get_children()) == 0)
+        self.assertTrue(len(packetBytesDisplay.get("1.0", tk.END)) == 1)
         packetDisplay.selection_set(ids[0])
         packetListView.selectPacket(1)
         self.assertTrue(len(packetDetailList.get_children()) != 0)
-        self.assertTrue(len(packetBytesDisplay.get("1.0", tk.END)) != 0)
+        self.assertTrue(len(packetBytesDisplay.get("1.0", tk.END)) > 1)
 
 
 if __name__ == '__main__':

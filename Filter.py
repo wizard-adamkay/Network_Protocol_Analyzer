@@ -1,5 +1,6 @@
 import tkinter as tk
 
+
 class FilterBar(tk.Frame):
     def __init__(self, parent, **kw):
         super().__init__(**kw)
@@ -23,10 +24,9 @@ class FilterBar(tk.Frame):
             self.currentFilter = userInput
             self.parent.packetListView.clear()
             if fast:
-                for index, packet in enumerate(self.parent.packetListView.displayedPackets):
-                    if self.filterPacket(packet, self.parent.packetListView.displayedPacketsNum[index]):
-                        self.parent.packetListView.addToList(self.parent.packetListView.displayedPacketsNum[index],
-                                                             packet)
+                for index in self.parent.packetListView.displayedPacketsNum:
+                    if self.filterPacket(self.parent.packetHandler.fullPacketList[index - 1], index):
+                        self.parent.packetListView.addToList(index, self.parent.packetHandler.fullPacketList[index - 1])
             else:
                 for index, packet in enumerate(self.parent.packetHandler.fullPacketList):
                     if self.filterPacket(packet, index):

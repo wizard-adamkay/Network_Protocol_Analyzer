@@ -20,7 +20,10 @@ class MenuHeader(tk.Frame):
             fileName = filedialog.asksaveasfilename(initialdir=os.getcwd(), defaultextension=".pcap",
                                                     title="Save as",
                                                     filetypes=(("PCAP Files", "*.pcap*"), ("All Files", "*.*")))
-            wrpcap(fileName, self.parent.packetListView.displayedPackets)
+            displayedPackets = []
+            for index in self.parent.packetListView.displayedPacketsNum:
+                displayedPackets.append(self.parent.packetHandler.fullPacketList[index - 1])
+            wrpcap(fileName, displayedPackets)
             self.fileName = fileName
 
         def loadFromPcap():

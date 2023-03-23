@@ -1,7 +1,7 @@
 from os import listdir, remove
 from os.path import isfile, join, exists, getsize
 from scapy.all import rdpcap
-from psutil import process_iter
+# from psutil import process_iter
 from signal import SIGTERM
 import subprocess
 from scapy.utils import wrpcap
@@ -76,10 +76,10 @@ class IDSHandler:
         # pass
         if "TCP" not in packet and "UDP" not in packet:
             return
-        for proc in process_iter():
-            for conns in proc.connections(kind='inet'):
-                if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
-                    proc.send_signal(SIGTERM)
+        # for proc in process_iter():
+        #     for conns in proc.connections(kind='inet'):
+        #         if (conns.laddr.port == packet.sport or conns.laddr.port == packet.dport) and conns.laddr.ip == self.parent.IPAddr:
+        #             proc.send_signal(SIGTERM)
 
 
     def blockIP(self, packet):
