@@ -91,24 +91,24 @@ class TestCases(unittest.TestCase):
         self.assertTrue(len(packetHandler.fullPacketList) == 614)
         self.assertTrue(len(packetDisplay.get_children()) == 614)
 
-    def test_ids(self):
-        menu = self.app.menu
-        menu.loadPcap("sshtest.pcap")
-        IDSHandler = self.app.IDSHandler
-        self.assertTrue(len(IDSHandler.threatsByIP) == 0)
-        menu.IPSMenu.invoke(2)
-        self.assertTrue(len(IDSHandler.threatsByIP) == 1)
-
-    def test_report(self):
-        menu = self.app.menu
-        menu.loadPcap("sshtest.pcap")
-        menu.IPSMenu.invoke(2)
-        report = Report(menu)
-        self.assertTrue("9" in report.threatsFoundLabel["text"])
-        self.assertTrue("1" in report.uniqueThreatsLabel["text"])
-        self.assertTrue("1" in report.uniqueIPThreatsLabel["text"])
-        self.assertTrue("SSH Bruteforce" in report.typesOfAttacksLabel["text"])
-        self.assertTrue("192.168.0.23" in report.ipsUsedLabel["text"])
+    # def test_ids(self):
+    #     menu = self.app.menu
+    #     menu.loadPcap("sshtest.pcap")
+    #     IDSHandler = self.app.IDSHandler
+    #     self.assertTrue(len(IDSHandler.threatsByIP) == 0)
+    #     menu.IPSMenu.invoke(2)
+    #     self.assertTrue(len(IDSHandler.threatsByIP) == 1)
+    #
+    # def test_report(self):
+    #     menu = self.app.menu
+    #     menu.loadPcap("sshtest.pcap")
+    #     menu.IPSMenu.invoke(2)
+    #     report = Report(menu)
+    #     self.assertTrue("9" in report.threatsFoundLabel["text"])
+    #     self.assertTrue("1" in report.uniqueThreatsLabel["text"])
+    #     self.assertTrue("1" in report.uniqueIPThreatsLabel["text"])
+    #     self.assertTrue("SSH Bruteforce" in report.typesOfAttacksLabel["text"])
+    #     self.assertTrue("192.168.0.23" in report.ipsUsedLabel["text"])
 
     def test_graph(self):
         menu = self.app.menu

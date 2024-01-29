@@ -11,6 +11,8 @@ from PacketHandler import PacketHandler
 from PacketDetailList import PacketDetailListView
 from IDSHandler import IDSHandler
 
+conf.sniff_promisc = False
+
 
 class MainApp(tk.Frame):
     def __init__(self, parent, **kw):
